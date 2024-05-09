@@ -41,6 +41,7 @@ export class ZodValidationPipe implements PipeTransform {
 
   private formatZodError(errors: ZodError): Record<string, string[]> {
     return errors.errors.reduce<Record<string, string[]>>((acc, curr) => {
+      // BUG Path is empty on non-object schemas
       const field = curr.path.join('.')
       const message = curr.message
 
