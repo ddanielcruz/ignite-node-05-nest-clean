@@ -1,0 +1,13 @@
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+
+import { Comment, CommentProps } from './comment'
+
+export interface QuestionCommentProps extends CommentProps {
+  questionId: UniqueEntityId
+}
+
+export class QuestionComment extends Comment<QuestionCommentProps> {
+  get questionId(): UniqueEntityId {
+    return this.props.questionId
+  }
+}
