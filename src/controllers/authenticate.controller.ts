@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt'
 import { compare } from 'bcryptjs'
 import { z } from 'zod'
 
+import type { TokenPayload } from '@/auth/jwt.strategy'
 import { ZodValidationPipe } from '@/pipes/zod-validation-pipe'
 import { PrismaService } from '@/prisma/prisma.service'
 
@@ -43,7 +44,8 @@ export class AuthenticateController {
       throw new UnauthorizedException('Invalid credentials.')
     }
 
-    const accessToken = await this.jwt.signAsync({ sub: user.id })
+    const payload: TokenPayload = { sub: user.id }
+    const accessToken = await this.jwt.signAsync(payload)
 
     return { accessToken }
   }
