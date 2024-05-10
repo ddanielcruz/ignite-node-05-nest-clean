@@ -8,6 +8,7 @@ import {
 import { z } from 'zod'
 
 import { RegisterStudent } from '@/domain/forum/application/use-cases/register-student'
+import { Public } from '@/infra/auth/public.decorator'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 
 const createAccountBodySchema = z.object({
@@ -18,6 +19,7 @@ const createAccountBodySchema = z.object({
 
 type CreateAccountBody = z.infer<typeof createAccountBodySchema>
 
+@Public()
 @Controller('accounts')
 export class CreateAccountController {
   constructor(private readonly registerStudent: RegisterStudent) {}

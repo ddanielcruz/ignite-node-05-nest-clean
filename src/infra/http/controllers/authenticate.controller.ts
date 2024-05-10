@@ -8,6 +8,7 @@ import {
 import { z } from 'zod'
 
 import { AuthenticateStudent } from '@/domain/forum/application/use-cases/authenticate-student'
+import { Public } from '@/infra/auth/public.decorator'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 
 const authenticateBodySchema = z.object({
@@ -17,6 +18,7 @@ const authenticateBodySchema = z.object({
 
 type AuthenticateBody = z.infer<typeof authenticateBodySchema>
 
+@Public()
 @Controller('sessions')
 export class AuthenticateController {
   constructor(private readonly authenticateStudent: AuthenticateStudent) {}
