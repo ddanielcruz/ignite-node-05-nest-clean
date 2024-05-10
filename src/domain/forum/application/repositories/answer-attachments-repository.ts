@@ -1,5 +1,5 @@
 import { AnswerAttachment } from '../../enterprise/entities/answer-attachment'
 
-export interface AnswerAttachmentsRepository {
-  findManyByAnswerId(answerId: string): Promise<AnswerAttachment[]>
+export abstract class AnswerAttachmentsRepository {
+  abstract findManyByAnswerId(answerId: string): Promise<AnswerAttachment[]>
 }
