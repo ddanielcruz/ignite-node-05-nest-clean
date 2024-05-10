@@ -67,7 +67,16 @@ export class Question extends AggregateRootWithTimestamps<QuestionProps> {
   }
 
   get excerpt() {
-    return this.content.substring(0, 120).trimEnd().concat('...')
+    const excerpt = this.content.substring(0, 120).trimEnd()
+    if (this.content.length <= excerpt.length) {
+      return excerpt
+    }
+
+    if (excerpt.endsWith('.')) {
+      return excerpt
+    }
+
+    return excerpt.concat('...')
   }
 
   get attachments(): QuestionAttachmentList {

@@ -1,3 +1,5 @@
+import { Injectable } from '@nestjs/common'
+
 import { Either, right } from '@/core/either'
 
 import { Question } from '../../enterprise/entities/question'
@@ -9,6 +11,7 @@ interface FetchRecentQuestionsRequest {
 
 type FetchRecentQuestionsResponse = Either<never, { questions: Question[] }>
 
+@Injectable()
 export class FetchRecentQuestions {
   constructor(private readonly questionsRepository: QuestionsRepository) {}
 

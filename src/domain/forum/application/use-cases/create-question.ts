@@ -1,10 +1,13 @@
-import { Either, right } from '@/core/either'
+import { Injectable } from '@nestjs/common'
+
+import { Either, left, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Question } from '@/domain/forum/enterprise/entities/question'
 
 import { QuestionAttachment } from '../../enterprise/entities/question-attachment'
 import { QuestionAttachmentList } from '../../enterprise/entities/question-attachment-list'
 import { QuestionsRepository } from '../repositories/questions-repository'
+import { DuplicateQuestionError } from './errors/duplicate-question-error'
 
 interface CreateQuestionRequest {
   authorId: string
@@ -13,8 +16,11 @@ interface CreateQuestionRequest {
   attachmentIds: string[]
 }
 
-type CreateQuestionResponse = Either<never, { question: Question }>
-
+type CreateQuestionResponse = Either<
+  DuplicateQuestionError,
+  { question: Question }
+>
+@Injectable()
 export class CreateQuestion {
   constructor(private readonly questionsRepository: QuestionsRepository) {}
 
@@ -26,6 +32,14 @@ export class CreateQuestion {
       title: request.title,
       content: request.content,
     })
+
+    const questionWithSameSlug = await this.questionsRepository.findBySlug(
+      question.slug.value,
+    )
+
+    if (questionWithSameSlug) {
+      return left(new DuplicateQuestionError())
+    }
 
     question.attachments = new QuestionAttachmentList(
       request.attachmentIds.map(

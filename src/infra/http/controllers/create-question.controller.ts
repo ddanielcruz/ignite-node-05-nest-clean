@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common'
 import { z } from 'zod'
 
+import { CreateQuestion } from '@/domain/forum/application/use-cases/create-question'
 import { CurrentUser, UserPayload } from '@/infra/auth/current-user.decorator'
 import { JwtAuthGuard } from '@/infra/auth/jwt-auth.guard'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 
 const createQuestionBodySchema = z.object({
@@ -25,7 +25,7 @@ type CreateQuestionBody = z.infer<typeof createQuestionBodySchema>
 @Controller('questions')
 @UseGuards(JwtAuthGuard)
 export class CreateQuestionController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly createQuestion: CreateQuestion) {}
 
   @Post()
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -36,36 +36,17 @@ export class CreateQuestionController {
   ) {
     const { sub: userId } = user
     const { title, content } = body
-    const slug = this.convertToSlug(title)
-
-    const questionWithSameSlug = await this.prisma.question.findUnique({
-      select: { id: true },
-      where: { slug },
+    const result = await this.createQuestion.execute({
+      authorId: userId,
+      title,
+      content,
+      attachmentIds: [],
     })
 
-    if (questionWithSameSlug) {
-      throw new ConflictException(
-        'Question with the same title already exists.',
-      )
+    if (result.isLeft()) {
+      throw new ConflictException(result.value.message)
     }
 
-    await this.prisma.question.create({
-      data: {
-        authorId: userId,
-        title,
-        content,
-        slug,
-      },
-    })
-  }
-
-  private convertToSlug(title: string) {
-    return title
-      .normalize('NFKD')
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
+    return result.value
   }
 }
