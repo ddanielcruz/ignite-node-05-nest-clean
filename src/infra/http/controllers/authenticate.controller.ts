@@ -10,8 +10,8 @@ import { compare } from 'bcryptjs'
 import { z } from 'zod'
 
 import type { TokenPayload } from '@/infra/auth/jwt.strategy'
-import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
+import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 
 const authenticateBodySchema = z.object({
   email: z.string().email(),

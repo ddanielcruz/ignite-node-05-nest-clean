@@ -12,8 +12,8 @@ import { z } from 'zod'
 
 import { CurrentUser, UserPayload } from '@/infra/auth/current-user.decorator'
 import { JwtAuthGuard } from '@/infra/auth/jwt-auth.guard'
-import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
+import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 
 const createQuestionBodySchema = z.object({
   title: z.string().trim().min(1),
