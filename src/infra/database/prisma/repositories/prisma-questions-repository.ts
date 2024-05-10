@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common'
 
-import { PaginationParams } from '@/core/repositories/pagination-params'
+import {
+  DEFAULT_PAGE_SIZE,
+  PaginationParams,
+} from '@/core/repositories/pagination-params'
 import { QuestionsRepository } from '@/domain/forum/application/repositories/questions-repository'
 import { Question } from '@/domain/forum/enterprise/entities/question'
 
@@ -41,8 +44,8 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
 
   async findManyRecent({ page }: PaginationParams): Promise<Question[]> {
     const questions = await this.prisma.question.findMany({
-      take: 20,
-      skip: (page - 1) * 20,
+      take: DEFAULT_PAGE_SIZE,
+      skip: (page - 1) * DEFAULT_PAGE_SIZE,
       orderBy: { createdAt: 'desc' },
     })
 

@@ -70,7 +70,7 @@ model Comment {
   answerId   String?   @map("answer_id")
   content    String
   createdAt  DateTime  @default(now()) @map("created_at")
-  uodatedAt  DateTime? @updatedAt @map("updated_at")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
 
   author   User      @relation(fields: [authorId], references: [id])
   question Question? @relation(fields: [questionId], references: [id])

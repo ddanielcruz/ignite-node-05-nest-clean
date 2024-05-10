@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common'
 
-import { PaginationParams } from '@/core/repositories/pagination-params'
+import {
+  DEFAULT_PAGE_SIZE,
+  PaginationParams,
+} from '@/core/repositories/pagination-params'
 import { AnswersRepository } from '@/domain/forum/application/repositories/answers-repository'
 import { Answer } from '@/domain/forum/enterprise/entities/answer'
 
@@ -37,8 +40,8 @@ export class PrismaAnswersRepository implements AnswersRepository {
   ): Promise<Answer[]> {
     const answers = await this.prisma.answer.findMany({
       where: { questionId },
-      take: 20,
-      skip: (page - 1) * 20,
+      take: DEFAULT_PAGE_SIZE,
+      skip: (page - 1) * DEFAULT_PAGE_SIZE,
       orderBy: { createdAt: 'desc' },
     })
 
