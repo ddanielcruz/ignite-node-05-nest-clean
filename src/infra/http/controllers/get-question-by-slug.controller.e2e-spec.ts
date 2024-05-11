@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common'
-import { JwtService } from '@nestjs/jwt'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
+import { createAndAuthenticateUser } from 'test/utils/create-and-authenticate-user'
 
 import { AppModule } from '@/infra/app.module'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
@@ -9,7 +9,6 @@ import { PrismaService } from '@/infra/database/prisma/prisma.service'
 describe('GetQuestionBySlug (e2e)', () => {
   let app: INestApplication
   let prisma: PrismaService
-  let jwt: JwtService
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -18,20 +17,12 @@ describe('GetQuestionBySlug (e2e)', () => {
 
     app = moduleRef.createNestApplication()
     prisma = moduleRef.get(PrismaService)
-    jwt = moduleRef.get(JwtService)
 
     await app.init()
   })
 
   test('[GET] /questions/:slug', async () => {
-    const user = await prisma.user.create({
-      data: {
-        name: 'John',
-        email: 'john@example.com',
-        passwordHash: '123456',
-      },
-    })
-    const accessToken = await jwt.signAsync({ sub: user.id })
+    const { user, accessToken } = await createAndAuthenticateUser(app, prisma)
     const createdQuestion = await prisma.question.create({
       data: {
         title: 'Question 1',
