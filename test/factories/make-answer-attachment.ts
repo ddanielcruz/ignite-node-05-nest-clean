@@ -4,16 +4,17 @@ import {
   AnswerAttachmentProps,
 } from '@/domain/forum/enterprise/entities/answer-attachment'
 
-export function makeAnswerAttachment({
-  id,
-  ...override
-}: Partial<AnswerAttachmentProps> & { id?: UniqueEntityId } = {}) {
+type AnswerAttachmentFactoryProps = Partial<AnswerAttachmentProps> & {
+  id?: UniqueEntityId
+}
+
+export function makeAnswerAttachment(override?: AnswerAttachmentFactoryProps) {
   return new AnswerAttachment(
     {
       attachmentId: new UniqueEntityId(),
       answerId: new UniqueEntityId(),
       ...override,
     },
-    id,
+    override?.id,
   )
 }

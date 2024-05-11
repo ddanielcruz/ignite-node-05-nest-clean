@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker'
+import { Injectable } from '@nestjs/common'
 
 import { Timestamps } from '@/core/entities/timestamps'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
@@ -6,12 +7,14 @@ import {
   Question,
   QuestionProps,
 } from '@/domain/forum/enterprise/entities/question'
+import { PrismaQuestionMapper } from '@/infra/database/prisma/mappers/prisma-question-mapper'
+import { PrismaService } from '@/infra/database/prisma/prisma.service'
 
-export function makeQuestion(
-  override?: Partial<
-    QuestionProps & Timestamps & { id: UniqueEntityId | string }
-  >,
-): Question {
+type QuestionFactoryProps = Partial<
+  QuestionProps & Timestamps & { id: UniqueEntityId | string }
+>
+
+export function makeQuestion(override?: QuestionFactoryProps): Question {
   return new Question(
     {
       authorId: new UniqueEntityId(),
@@ -21,4 +24,18 @@ export function makeQuestion(
     },
     override?.id,
   )
+}
+
+@Injectable()
+export class QuestionFactory {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async make(override?: QuestionFactoryProps) {
+    const question = makeQuestion(override)
+    await this.prisma.question.create({
+      data: PrismaQuestionMapper.toPrisma(question),
+    })
+
+    return question
+  }
 }

@@ -6,10 +6,11 @@ import {
   NotificationProps,
 } from '@/domain/notification/enterprise/entities/notification'
 
-export function makeNotification(
-  override: Partial<NotificationProps> = {},
-  id?: UniqueEntityId,
-) {
+type NotificationFactoryProps = Partial<
+  NotificationProps & { id: UniqueEntityId }
+>
+
+export function makeNotification(override?: NotificationFactoryProps) {
   return new Notification(
     {
       recipientId: new UniqueEntityId(),
@@ -17,6 +18,6 @@ export function makeNotification(
       content: faker.lorem.sentence(10),
       ...override,
     },
-    id,
+    override?.id,
   )
 }
