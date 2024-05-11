@@ -20,7 +20,7 @@ const createAccountBodySchema = z.object({
 type CreateAccountBody = z.infer<typeof createAccountBodySchema>
 
 @Public()
-@Controller('accounts')
+@Controller('/accounts')
 export class CreateAccountController {
   constructor(private readonly registerStudent: RegisterStudent) {}
 

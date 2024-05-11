@@ -19,7 +19,7 @@ const authenticateBodySchema = z.object({
 type AuthenticateBody = z.infer<typeof authenticateBodySchema>
 
 @Public()
-@Controller('sessions')
+@Controller('/sessions')
 export class AuthenticateController {
   constructor(private readonly authenticateStudent: AuthenticateStudent) {}
 

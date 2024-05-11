@@ -20,7 +20,7 @@ const createQuestionBodySchema = z.object({
 
 type CreateQuestionBody = z.infer<typeof createQuestionBodySchema>
 
-@Controller('questions')
+@Controller('/questions')
 export class CreateQuestionController {
   constructor(private readonly createQuestion: CreateQuestion) {}
 

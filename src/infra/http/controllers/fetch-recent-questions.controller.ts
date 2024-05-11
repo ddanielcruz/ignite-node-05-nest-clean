@@ -17,7 +17,7 @@ const queryParamsSchema = z.object({
 
 type QueryParams = z.infer<typeof queryParamsSchema>
 
-@Controller('questions')
+@Controller('/questions')
 export class FetchRecentQuestionsController {
   constructor(private readonly fetchRecentQuestions: FetchRecentQuestions) {}
 
