@@ -43,7 +43,5 @@ export class CreateQuestionController {
     if (result.isLeft()) {
       throw new ConflictException(result.value.message)
     }
-
-    return result.value
   }
 }

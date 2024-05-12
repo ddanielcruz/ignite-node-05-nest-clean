@@ -42,7 +42,7 @@ export class PrismaAnswersRepository implements AnswersRepository {
       where: { questionId },
       take: DEFAULT_PAGE_SIZE,
       skip: (page - 1) * DEFAULT_PAGE_SIZE,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
     })
 
     return answers.map(PrismaAnswerMapper.toDomain)

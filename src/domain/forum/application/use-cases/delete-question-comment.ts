@@ -1,3 +1,5 @@
+import { Injectable } from '@nestjs/common'
+
 import { Either, left, right } from '@/core/either'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error'
@@ -14,6 +16,7 @@ type DeleteQuestionCommentResponse = Either<
   void
 >
 
+@Injectable()
 export class DeleteQuestionComment {
   constructor(
     private readonly questionsCommentRepository: QuestionCommentsRepository,
@@ -28,7 +31,7 @@ export class DeleteQuestionComment {
       return left(new ResourceNotFoundError())
     }
 
-    if (comment.authorId.value !== authorId) {
+    if (!comment.authorId.equals(authorId)) {
       return left(new NotAllowedError())
     }
 

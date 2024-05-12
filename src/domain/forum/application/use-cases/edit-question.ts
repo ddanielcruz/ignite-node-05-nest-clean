@@ -1,3 +1,5 @@
+import { Injectable } from '@nestjs/common'
+
 import { Either, left, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
@@ -8,6 +10,7 @@ import { QuestionAttachment } from '../../enterprise/entities/question-attachmen
 import { QuestionAttachmentList } from '../../enterprise/entities/question-attachment-list'
 import { QuestionAttachmentsRepository } from '../repositories/question-attachments-repository'
 import { QuestionsRepository } from '../repositories/questions-repository'
+import { DuplicateQuestionError } from './errors/duplicate-question-error'
 
 interface EditQuestionRequest {
   authorId: string
@@ -18,10 +21,11 @@ interface EditQuestionRequest {
 }
 
 type EditQuestionResponse = Either<
-  ResourceNotFoundError | NotAllowedError,
+  ResourceNotFoundError | NotAllowedError | DuplicateQuestionError,
   { question: Question }
 >
 
+@Injectable()
 export class EditQuestion {
   constructor(
     private readonly questionsRepository: QuestionsRepository,
@@ -64,6 +68,16 @@ export class EditQuestion {
           }),
       ),
     )
+
+    const questionWithSameTitle = await this.questionsRepository.findBySlug(
+      question.slug.value,
+    )
+    if (
+      questionWithSameTitle &&
+      questionWithSameTitle.id.value !== question.id.value
+    ) {
+      return left(new DuplicateQuestionError())
+    }
 
     await this.questionsRepository.save(question)
 
