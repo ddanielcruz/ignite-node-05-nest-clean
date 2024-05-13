@@ -82,7 +82,7 @@ model Comment {
 model Attachment {
   id         String  @id @default(cuid())
   questionId String? @map("question_id")
-  answerId   String  @map("answer_id")
+  answerId   String? @map("answer_id")
   title      String
   url        String  @unique
 

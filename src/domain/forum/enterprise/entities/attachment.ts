@@ -2,7 +2,7 @@ import { Entity } from '@/core/entities/entity'
 
 interface AttachmentProps {
   title: string
-  link: string
+  url: string
 }
 
 export class Attachment extends Entity<AttachmentProps> {
@@ -10,7 +10,7 @@ export class Attachment extends Entity<AttachmentProps> {
     return this.props.title
   }
 
-  get link(): string {
-    return this.props.link
+  get url(): string {
+    return this.props.url
   }
 }
