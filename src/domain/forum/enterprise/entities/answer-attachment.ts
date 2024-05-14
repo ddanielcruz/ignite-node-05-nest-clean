@@ -14,4 +14,8 @@ export class AnswerAttachment extends Entity<AnswerAttachmentProps> {
   get attachmentId(): UniqueEntityId {
     return this.props.attachmentId
   }
+
+  constructor(props: AnswerAttachmentProps) {
+    super(props, props.attachmentId)
+  }
 }

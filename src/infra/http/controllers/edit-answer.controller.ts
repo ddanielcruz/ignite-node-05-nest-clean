@@ -18,6 +18,7 @@ import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 
 const editAnswerBodySchema = z.object({
   content: z.string().trim().min(1),
+  attachments: z.array(z.string().uuid()).default([]),
 })
 
 type EditAnswerBody = z.infer<typeof editAnswerBodySchema>
@@ -35,12 +36,12 @@ export class EditAnswerController {
     @Param('id') answerId: string,
   ) {
     const { sub: userId } = user
-    const { content } = body
+    const { content, attachments } = body
     const result = await this.editAnswer.execute({
       authorId: userId,
       answerId,
       content,
-      attachmentIds: [],
+      attachmentIds: attachments,
     })
 
     if (result.isLeft()) {

@@ -6,6 +6,8 @@ import { InMemoryAnswersRepository } from 'test/repositories/in-memory-answers-r
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 
+import { AnswerAttachment } from '../../enterprise/entities/answer-attachment'
+import { AnswerAttachmentList } from '../../enterprise/entities/answer-attachment-list'
 import { EditAnswer } from './edit-answer'
 
 let sut: EditAnswer
@@ -14,8 +16,8 @@ let attachmentsRepository: InMemoryAnswerAttachmentsRepository
 
 describe('Edit Answer', () => {
   beforeEach(() => {
-    answersRepository = new InMemoryAnswersRepository()
     attachmentsRepository = new InMemoryAnswerAttachmentsRepository()
+    answersRepository = new InMemoryAnswersRepository(attachmentsRepository)
     sut = new EditAnswer(answersRepository, attachmentsRepository)
   })
 
@@ -69,5 +71,37 @@ describe('Edit Answer', () => {
       title: 'new title',
       content: 'new body',
     })
+  })
+
+  it('should sync new and removed attachments when editing an answer', async () => {
+    const answerToEdit = makeAnswer()
+    answerToEdit.attachments = new AnswerAttachmentList([
+      new AnswerAttachment({
+        answerId: answerToEdit.id,
+        attachmentId: new UniqueEntityId('1'),
+      }),
+      new AnswerAttachment({
+        answerId: answerToEdit.id,
+        attachmentId: new UniqueEntityId('2'),
+      }),
+    ])
+
+    await answersRepository.create(answerToEdit)
+
+    const result = await sut.execute({
+      authorId: answerToEdit.authorId.value,
+      answerId: answerToEdit.id.value,
+      content: 'new body',
+      attachmentIds: ['1', '3'],
+    })
+
+    assert(result.isRight())
+    expect(attachmentsRepository.attachments).toHaveLength(2)
+    expect(attachmentsRepository.attachments).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ attachmentId: new UniqueEntityId('1') }),
+        expect.objectContaining({ attachmentId: new UniqueEntityId('3') }),
+      ]),
+    )
   })
 })

@@ -6,11 +6,22 @@ import {
 import { AnswersRepository } from '@/domain/forum/application/repositories/answers-repository'
 import { Answer } from '@/domain/forum/enterprise/entities/answer'
 
+import { InMemoryAnswerAttachmentsRepository } from './in-memory-answer-attachments-repository'
+
 export class InMemoryAnswersRepository implements AnswersRepository {
+  public readonly attachmentsRepo: InMemoryAnswerAttachmentsRepository
+
   public answers: Answer[] = []
+
+  constructor(attachmentsRepo?: InMemoryAnswerAttachmentsRepository) {
+    this.attachmentsRepo =
+      attachmentsRepo ?? new InMemoryAnswerAttachmentsRepository()
+  }
 
   async create(answer: Answer): Promise<void> {
     this.answers.push(answer)
+    await this.attachmentsRepo.createMany(answer.attachments.getItems())
+
     DomainEvents.dispatchEventsForAggregate(answer.id)
   }
 
@@ -18,6 +29,8 @@ export class InMemoryAnswersRepository implements AnswersRepository {
     this.answers = this.answers.filter(
       (item) => item.id.value !== answer.id.value,
     )
+
+    await this.attachmentsRepo.deleteMany(answer.attachments.getItems())
   }
 
   async findById(id: string): Promise<Answer | null> {
@@ -38,6 +51,10 @@ export class InMemoryAnswersRepository implements AnswersRepository {
     this.answers = this.answers.map((item) =>
       item.id.value === answer.id.value ? answer : item,
     )
+
+    await this.attachmentsRepo.createMany(answer.attachments.getNewItems())
+    await this.attachmentsRepo.deleteMany(answer.attachments.getRemovedItems())
+
     DomainEvents.dispatchEventsForAggregate(answer.id)
   }
 }

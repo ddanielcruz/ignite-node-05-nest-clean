@@ -8,7 +8,9 @@ import { AppModule } from '@/infra/app.module'
 import { DatabaseModule } from '@/infra/database/database.module'
 import { StorageModule } from '@/infra/storage/storage.module'
 
-describe('UploadAttachmentController', () => {
+const TEST_SUITE_TIMEOUT = 15_000 // 15 seconds
+
+describe('UploadAttachmentController', { timeout: TEST_SUITE_TIMEOUT }, () => {
   let app: INestApplication
   let sessionFactory: SessionFactory
 

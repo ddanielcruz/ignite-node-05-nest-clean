@@ -4,6 +4,7 @@ import {
   DEFAULT_PAGE_SIZE,
   PaginationParams,
 } from '@/core/repositories/pagination-params'
+import { AnswerAttachmentsRepository } from '@/domain/forum/application/repositories/answer-attachments-repository'
 import { AnswersRepository } from '@/domain/forum/application/repositories/answers-repository'
 import { Answer } from '@/domain/forum/enterprise/entities/answer'
 
@@ -12,18 +13,25 @@ import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class PrismaAnswersRepository implements AnswersRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly attachmentsRepo: AnswerAttachmentsRepository,
+  ) {}
 
   async create(answer: Answer): Promise<void> {
     await this.prisma.answer.create({
       data: PrismaAnswerMapper.toPrisma(answer),
     })
+
+    await this.attachmentsRepo.createMany(answer.attachments.getItems())
   }
 
   async delete(answer: Answer): Promise<void> {
     await this.prisma.answer.delete({
       where: { id: answer.id.toString() },
     })
+
+    await this.attachmentsRepo.deleteMany(answer.attachments.getItems())
   }
 
   async findById(id: string): Promise<Answer | null> {
@@ -49,9 +57,13 @@ export class PrismaAnswersRepository implements AnswersRepository {
   }
 
   async save(answer: Answer): Promise<void> {
-    await this.prisma.answer.update({
-      where: { id: answer.id.toString() },
-      data: PrismaAnswerMapper.toPrisma(answer),
-    })
+    await Promise.all([
+      this.prisma.answer.update({
+        where: { id: answer.id.toString() },
+        data: PrismaAnswerMapper.toPrisma(answer),
+      }),
+      this.attachmentsRepo.createMany(answer.attachments.getNewItems()),
+      this.attachmentsRepo.deleteMany(answer.attachments.getRemovedItems()),
+    ])
   }
 }

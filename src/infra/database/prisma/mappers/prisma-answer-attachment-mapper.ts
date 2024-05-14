@@ -9,12 +9,9 @@ export class PrismaAnswerAttachmentMapper {
       throw new Error('AnswerAttachment must have an answerId.')
     }
 
-    return new AnswerAttachment(
-      {
-        attachmentId: new UniqueEntityId(attachment.id),
-        answerId: new UniqueEntityId(attachment.answerId),
-      },
-      attachment.id,
-    )
+    return new AnswerAttachment({
+      attachmentId: new UniqueEntityId(attachment.id),
+      answerId: new UniqueEntityId(attachment.answerId),
+    })
   }
 }

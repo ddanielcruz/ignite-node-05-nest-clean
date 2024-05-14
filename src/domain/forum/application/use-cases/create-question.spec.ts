@@ -57,4 +57,28 @@ describe('Create Question', () => {
     expect(result.isLeft())
     expect(result.value).toBeInstanceOf(DuplicateQuestionError)
   })
+
+  it('should persist attachments when creating a new question', async () => {
+    const result = await sut.execute({
+      authorId: 'any_author_id',
+      title: 'any_title',
+      content: 'any_content',
+      attachmentIds: ['1', '2'],
+    })
+
+    assert(result.isRight())
+    expect(
+      inMemoryQuestionsRepository.attachmentsRepo.attachments,
+    ).toHaveLength(2)
+    expect(inMemoryQuestionsRepository.attachmentsRepo.attachments).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          attachmentId: new UniqueEntityId('1'),
+        }),
+        expect.objectContaining({
+          attachmentId: new UniqueEntityId('2'),
+        }),
+      ]),
+    )
+  })
 })
