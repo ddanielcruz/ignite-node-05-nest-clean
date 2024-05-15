@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { FetchAnswerComments } from '@/domain/forum/application/use-cases/fetch-answer-comments'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 
-import { CommentPresenter } from '../presenters/comment-presenter'
+import { CommentWithAuthorPresenter } from '../presenters/comment-with-author-presenter'
 
 const queryParamsSchema = z.object({
   page: z
@@ -31,7 +31,9 @@ export class FetchAnswerCommentsController {
       page,
       answerId,
     })
-    const comments = result.value.comments.map(CommentPresenter.toHTTP)
+    const comments = result.value.comments.map(
+      CommentWithAuthorPresenter.toHTTP,
+    )
 
     return { comments }
   }

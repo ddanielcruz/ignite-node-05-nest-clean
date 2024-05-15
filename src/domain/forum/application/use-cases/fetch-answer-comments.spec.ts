@@ -1,25 +1,32 @@
 import { makeAnswer } from 'test/factories/make-answer'
 import { makeAnswerComment } from 'test/factories/make-answer-comment'
+import { makeStudent } from 'test/factories/make-student'
 import { InMemoryAnswerCommentsRepository } from 'test/repositories/in-memory-answer-comments-repository'
+import { InMemoryStudentsRepository } from 'test/repositories/in-memory-students-repository'
 
 import { FetchAnswerComments } from './fetch-answer-comments'
 
 let sut: FetchAnswerComments
-let inMemoryAnswerCommentsRepository: InMemoryAnswerCommentsRepository
+let studentsRepo: InMemoryStudentsRepository
+let commentsRepo: InMemoryAnswerCommentsRepository
 
 describe('Fetch Answer Comments', () => {
   beforeEach(() => {
-    inMemoryAnswerCommentsRepository = new InMemoryAnswerCommentsRepository()
-    sut = new FetchAnswerComments(inMemoryAnswerCommentsRepository)
+    studentsRepo = new InMemoryStudentsRepository()
+    commentsRepo = new InMemoryAnswerCommentsRepository(studentsRepo)
+    sut = new FetchAnswerComments(commentsRepo)
   })
 
   it('should be able to fetch answer comments', async () => {
-    const answer = makeAnswer()
-    await inMemoryAnswerCommentsRepository.create(
-      makeAnswerComment({ answerId: answer.id }),
+    const student = makeStudent()
+    await studentsRepo.create(student)
+
+    const answer = makeAnswer({ authorId: student.id })
+    await commentsRepo.create(
+      makeAnswerComment({ authorId: student.id, answerId: answer.id }),
     )
-    await inMemoryAnswerCommentsRepository.create(
-      makeAnswerComment({ answerId: answer.id }),
+    await commentsRepo.create(
+      makeAnswerComment({ authorId: student.id, answerId: answer.id }),
     )
 
     const {
@@ -33,10 +40,12 @@ describe('Fetch Answer Comments', () => {
   })
 
   it('should be able to fetch paginated comments', async () => {
-    const answer = makeAnswer()
+    const student = makeStudent()
+    await studentsRepo.create(student)
+    const answer = makeAnswer({ authorId: student.id })
     for (let i = 1; i <= 22; i++) {
-      await inMemoryAnswerCommentsRepository.create(
-        makeAnswerComment({ answerId: answer.id }),
+      await commentsRepo.create(
+        makeAnswerComment({ authorId: student.id, answerId: answer.id }),
       )
     }
     const {

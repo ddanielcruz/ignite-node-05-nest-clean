@@ -52,8 +52,20 @@ describe('FetchQuestionCommentsController (e2e)', () => {
     expect(response.status).toEqual(200)
     expect(response.body).toEqual({
       comments: expect.arrayContaining([
-        expect.objectContaining({ content: 'Comment 1' }),
-        expect.objectContaining({ content: 'Comment 2' }),
+        expect.objectContaining({
+          content: 'Comment 1',
+          author: expect.objectContaining({
+            id: user.id.toString(),
+            name: user.name,
+          }),
+        }),
+        expect.objectContaining({
+          content: 'Comment 2',
+          author: expect.objectContaining({
+            id: user.id.toString(),
+            name: user.name,
+          }),
+        }),
       ]),
     })
   })

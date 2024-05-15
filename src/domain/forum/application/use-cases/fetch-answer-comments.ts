@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 
 import { Either, right } from '@/core/either'
 
-import { AnswerComment } from '../../enterprise/entities/answer-comment'
+import { CommentWithAutor } from '../../enterprise/entities/value-objects/comment-with-author'
 import { AnswerCommentsRepository } from '../repositories/answer-comments.repository'
 
 interface FetchAnswerCommentsRequest {
@@ -10,7 +10,10 @@ interface FetchAnswerCommentsRequest {
   page: number
 }
 
-type FetchAnswerCommentsResponse = Either<never, { comments: AnswerComment[] }>
+type FetchAnswerCommentsResponse = Either<
+  never,
+  { comments: CommentWithAutor[] }
+>
 
 @Injectable()
 export class FetchAnswerComments {
@@ -20,7 +23,7 @@ export class FetchAnswerComments {
     answerId,
     page,
   }: FetchAnswerCommentsRequest): Promise<FetchAnswerCommentsResponse> {
-    const comments = await this.commentsRepository.findManyByAnswerId(
+    const comments = await this.commentsRepository.findManyByAnswerIdWithAuthor(
       answerId,
       { page },
     )
