@@ -12,20 +12,22 @@ import { EditQuestion } from './edit-question'
 
 let sut: EditQuestion
 let questionsRepo: InMemoryQuestionsRepository
-let attachmentsRepo: InMemoryQuestionAttachmentsRepository
+let questionAttachmentsRepo: InMemoryQuestionAttachmentsRepository
 
 describe('Edit Question', () => {
   beforeEach(() => {
-    attachmentsRepo = new InMemoryQuestionAttachmentsRepository()
-    questionsRepo = new InMemoryQuestionsRepository(attachmentsRepo)
-    sut = new EditQuestion(questionsRepo, attachmentsRepo)
+    questionAttachmentsRepo = new InMemoryQuestionAttachmentsRepository()
+    questionsRepo = new InMemoryQuestionsRepository({
+      questionAttachmentsRepo,
+    })
+    sut = new EditQuestion(questionsRepo, questionAttachmentsRepo)
   })
 
   it('should be able to edit a question', async () => {
     const questionToEdit = makeQuestion()
 
     await questionsRepo.create(questionToEdit)
-    attachmentsRepo.attachments.push(
+    questionAttachmentsRepo.attachments.push(
       makeQuestionAttachment({
         questionId: questionToEdit.id,
         attachmentId: new UniqueEntityId('1'),
@@ -100,8 +102,8 @@ describe('Edit Question', () => {
     })
 
     assert(result.isRight())
-    expect(attachmentsRepo.attachments).toHaveLength(2)
-    expect(attachmentsRepo.attachments).toEqual(
+    expect(questionAttachmentsRepo.attachments).toHaveLength(2)
+    expect(questionAttachmentsRepo.attachments).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ attachmentId: new UniqueEntityId('1') }),
         expect.objectContaining({ attachmentId: new UniqueEntityId('3') }),

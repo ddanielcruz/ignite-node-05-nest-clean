@@ -5,21 +5,41 @@ import {
 } from '@/core/repositories/pagination-params'
 import { QuestionsRepository } from '@/domain/forum/application/repositories/questions-repository'
 import { Question } from '@/domain/forum/enterprise/entities/question'
+import { QuestionDetails } from '@/domain/forum/enterprise/entities/value-objects/question-details'
 
+import { InMemoryAttachmentsRepository } from './in-memory-attachments-repository'
 import { InMemoryQuestionAttachmentsRepository } from './in-memory-question-attachments-repository'
+import { InMemoryStudentsRepository } from './in-memory-students-repository'
+
+interface InMemoryQuestionsRepositoryParams {
+  questionAttachmentsRepo?: InMemoryQuestionAttachmentsRepository
+  attachmentsRepo?: InMemoryAttachmentsRepository
+  studentsRepo?: InMemoryStudentsRepository
+}
 
 export class InMemoryQuestionsRepository implements QuestionsRepository {
-  public attachmentsRepo: InMemoryQuestionAttachmentsRepository
+  public questionAttachmentsRepo: InMemoryQuestionAttachmentsRepository
+  public studentsRepo: InMemoryStudentsRepository
+  public attachmentsRepo: InMemoryAttachmentsRepository
   public questions: Question[] = []
 
-  constructor(attachmentsRepo?: InMemoryQuestionAttachmentsRepository) {
+  constructor({
+    questionAttachmentsRepo,
+    attachmentsRepo,
+    studentsRepo,
+  }: InMemoryQuestionsRepositoryParams = {}) {
+    this.questionAttachmentsRepo =
+      questionAttachmentsRepo ?? new InMemoryQuestionAttachmentsRepository()
     this.attachmentsRepo =
-      attachmentsRepo ?? new InMemoryQuestionAttachmentsRepository()
+      attachmentsRepo ?? new InMemoryAttachmentsRepository()
+    this.studentsRepo = studentsRepo ?? new InMemoryStudentsRepository()
   }
 
   async create(question: Question): Promise<void> {
     this.questions.push(question)
-    await this.attachmentsRepo.createMany(question.attachments.getItems())
+    await this.questionAttachmentsRepo.createMany(
+      question.attachments.getItems(),
+    )
 
     DomainEvents.dispatchEventsForAggregate(question.id)
   }
@@ -40,6 +60,42 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
     )
   }
 
+  async findDetailsBySlug(slug: string): Promise<QuestionDetails | null> {
+    const question = await this.findBySlug(slug)
+    if (!question) {
+      return null
+    }
+
+    const author = await this.studentsRepo.findById(question.authorId.value)
+    if (!author) {
+      throw new Error('Author not found')
+    }
+
+    const questionAttachmentIds = this.questionAttachmentsRepo.attachments
+      .filter((attachment) => attachment.questionId.equals(question.id))
+      .map((attachment) => attachment.attachmentId.toString())
+    const attachments = this.attachmentsRepo.attachments.filter((attachment) =>
+      questionAttachmentIds.includes(attachment.id.toString()),
+    )
+
+    return new QuestionDetails({
+      question: {
+        id: question.id,
+        content: question.content,
+        title: question.title,
+        slug: question.slug,
+        createdAt: question.createdAt,
+        updatedAt: question.updatedAt,
+      },
+      author: {
+        id: author.id,
+        name: author.name,
+      },
+      bestAnswerId: question.bestAnswerId,
+      attachments,
+    })
+  }
+
   async findManyRecent({ page }: PaginationParams): Promise<Question[]> {
     const offset = (page - 1) * DEFAULT_PAGE_SIZE
     return this.questions
@@ -53,10 +109,10 @@ export class InMemoryQuestionsRepository implements QuestionsRepository {
     )
 
     const createdAttachments = question.attachments.getNewItems()
-    await this.attachmentsRepo.createMany(createdAttachments)
+    await this.questionAttachmentsRepo.createMany(createdAttachments)
 
     const deletedAttachments = question.attachments.getRemovedItems()
-    await this.attachmentsRepo.deleteMany(deletedAttachments)
+    await this.questionAttachmentsRepo.deleteMany(deletedAttachments)
 
     DomainEvents.dispatchEventsForAggregate(question.id)
   }
