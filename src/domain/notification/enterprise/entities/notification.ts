@@ -35,7 +35,7 @@ export class Notification extends EntityWithTimestamps<NotificationProps> {
 
   constructor(
     props: Optional<NotificationProps, 'readAt'> & Partial<Timestamps>,
-    id?: UniqueEntityId,
+    id?: UniqueEntityId | string,
   ) {
     super({ readAt: null, ...props }, id)
   }

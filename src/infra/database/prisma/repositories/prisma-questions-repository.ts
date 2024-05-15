@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 
+import { DomainEvents } from '@/core/events/domain-events'
 import {
   DEFAULT_PAGE_SIZE,
   PaginationParams,
@@ -26,6 +27,8 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
     })
 
     await this.attachmentsRepo.createMany(question.attachments.getItems())
+
+    DomainEvents.dispatchEventsForAggregate(question.id)
   }
 
   async delete(question: Question): Promise<void> {
@@ -83,5 +86,7 @@ export class PrismaQuestionsRepository implements QuestionsRepository {
       this.attachmentsRepo.createMany(question.attachments.getNewItems()),
       this.attachmentsRepo.deleteMany(question.attachments.getRemovedItems()),
     ])
+
+    DomainEvents.dispatchEventsForAggregate(question.id)
   }
 }

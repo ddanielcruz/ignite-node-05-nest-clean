@@ -9,6 +9,12 @@ export class DomainEvents {
   private static handlersMap: Record<string, DomainEventCallback<any>[]> = {}
   private static markedAggregates: AggregateRoot<unknown>[] = []
 
+  private static isTestEnvironment() {
+    return process.env.NODE_ENV === 'test'
+  }
+
+  public static shouldRun = true
+
   public static markAggregateForDispatch(aggregate: AggregateRoot<unknown>) {
     const aggregateFound = !!this.findMarkedAggregateByID(aggregate.id)
 
@@ -70,6 +76,10 @@ export class DomainEvents {
     const eventClassName: string = event.constructor.name
 
     const isEventRegistered = eventClassName in this.handlersMap
+
+    if (!this.isTestEnvironment && !this.shouldRun) {
+      return
+    }
 
     if (isEventRegistered) {
       const handlers = this.handlersMap[eventClassName]
