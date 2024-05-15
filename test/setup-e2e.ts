@@ -3,20 +3,25 @@ import { randomUUID } from 'node:crypto'
 
 import { PrismaClient } from '@prisma/client'
 import { config } from 'dotenv'
+import { Redis } from 'ioredis'
 
 import { DomainEvents } from '@/core/events/domain-events'
+import { envSchema } from '@/infra/env/env.schema'
 
 config({ path: '.env', override: true })
 config({ path: '.env.test.local', override: true })
 
 const schemaId = randomUUID()
+const env = envSchema.parse(process.env)
+const redis = new Redis({
+  host: env.REDIS_HOST,
+  port: env.REDIS_PORT,
+  password: env.REDIS_PASSWORD,
+  db: env.REDIS_DB,
+})
 
 function generateUniqueDatabaseUrl() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is not set')
-  }
-
-  const url = new URL(process.env.DATABASE_URL)
+  const url = new URL(env.DATABASE_URL)
   url.searchParams.set('schema', schemaId)
 
   return url.toString()
@@ -25,6 +30,8 @@ function generateUniqueDatabaseUrl() {
 beforeAll(async () => {
   process.env.DATABASE_URL = generateUniqueDatabaseUrl()
   execSync('npx prisma migrate deploy', { env: process.env })
+
+  await redis.flushdb()
 
   DomainEvents.shouldRun = false
 })
